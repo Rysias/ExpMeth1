@@ -118,7 +118,7 @@ if (t_test$p.value > 0.05) {
 
 #3: tongue_twister and handedness
 tongue_hand <- df %>% group_by(handedness) %>% summarise(mean(tongue_twist), sd(tongue_twist), n())
-tongue_hand 
+tongue_hand
 
 # There is a big imbalance between left-handed and right-handed which makes the left-handed values much more shaky
 
