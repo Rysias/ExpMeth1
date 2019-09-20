@@ -1,0 +1,145 @@
+---
+title: "Portfolio 1 — Experimental Methods 1 2019"
+author: "Fabio Trecca"
+date: "9/19/2019"
+output: html_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE, include = TRUE)
+rm(list=ls())
+```
+
+## Portfolio exam - Part 1
+
+#### Defining helper function(s)
+```{r}
+CreateFactorCols <- function(df){
+  char_filter <- sapply(df, function(x) {is.character(x)}) 
+  char_cols <- names(df)[char_filter]
+  # Removing name and mutating
+  fact_cols <- char_cols[-1] 
+  df %>% mutate_at(fact_cols, function(x) {as.factor(x)})
+}
+
+# Found on https://www.tutorialspoint.com/r/r_mean_median_mode.htm
+GetMode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+
+#### Write a short data mining report on the CogSci Intro Week Personality Test Data in which you answer the following questions in prose, code and graphs:
+
+First of all, you have to import the personality data. If the dataset is in your working directory, then you can just load it into R. Otherwise you will have to change your working directory.
+
+```{r load_data}
+library(tidyverse)
+library(fs)
+library(ggpubr)
+
+file <- dir_ls(glob="NEW*Personality*.csv")
+df <- read_csv(file)
+df <- CreateFactorCols(df)
+```
+
+Once you are done loading the data, you can start working on the questions below.
+
+#### Question 1
+
+Who can hold their breath longer on average, those with right or left ocular dominance? Plot the data using ggplot2 to find out. The plots should include error bars (depicting the standard error of the means). Then use the mean() and sd() functions to find mean and standard deviation of the two eye dominance groups.
+
+
+```{r question1}
+plot1 <- ggplot(df, aes(x=ocular_dom, y=breath_hold, fill=ocular_dom)) +
+  geom_bar(stat="summary", fun.y="mean", width = 0.5) + 
+  geom_errorbar(stat="summary", fun.data=mean_se, width = 0.2) + 
+  theme_minimal() + 
+  labs(title = "Ocular Dominance vs Duration of Breath Hold") + 
+  xlab("Ocular Dominance") + 
+  ylab("Breath held in s")
+
+df %>% group_by(ocular_dom) %>% summarise(mean(breath_hold), sd(breath_hold), n_people = n())
+plot1
+```
+
+Explain your results in plain terms here: 
+Although the right-eyed group on average beats the other groups, it's not really convincing given the large standard deviation
+(in the table) and the overlapping Standard Error (in the graphs). And if that wasn't enough to bury the hypothesis, there were only
+4 people in the "both"-group, which is not nearly enough to gather great results
+---
+
+#### Question 2
+
+Who likes silence vs. noise best? Males or females? Also in this case you should plot the data using ggplot2 (including error bars), then use the mean() and sd() functions to find mean and standard deviation of the two genders.
+
+```{r question2}
+plot2 <- ggplot(df, aes(x=gender, y=sound_level_pref, fill=gender)) +
+  geom_bar(stat="summary", fun.y="mean", width = 0.5) + 
+  geom_errorbar(stat="summary", fun.data=mean_se, width = 0.2) + 
+  theme_minimal() + 
+  labs(title = "Sound preference of males vs females") + 
+  xlab("Gender") + 
+  ylab("Sound Preference") + 
+  stat_compare_means(method = "t.test", label.y = 30)
+
+
+df %>% group_by(gender) %>% summarise(mean(sound_level_pref), sd(sound_level_pref), n_subjects=n())
+plot2
+```
+
+Explain your results in plain terms here: 
+The difference in means is tiny and the standard deviation is large; men and women of cog-sci are equally noisy. Fun fact: The results are about as unsignificant as the effect of wearing black on instagram likes
+
+---
+
+#### Question 3
+
+Are the breath_hold data normally distributed? Provide visual and numeric support for your answer.
+
+```{r question3}
+ggplot(df, aes(x=breath_hold, fill=breath_hold)) +
+  geom_histogram(binwidth = 9, fill = "green", color = "dark green") + 
+  labs(title = "Distribution of breath_hold") + 
+  theme_minimal()
+
+df %>% summarise(mean_breath_hold = mean(breath_hold),
+                 median_breath_hold = median(breath_hold),
+                 mode_breath_hold = GetMode(breath_hold))
+```
+
+
+Explain your results in plain terms here: 
+The data is slightly skewed to the right. This is both supported numerically in that median < mean < mode and graphically which can be seen by the long tail to the right. This might be attributed to the fact that you can hold you breath for less than 0 seconds. 
+
+---
+
+#### Question 4
+
+Are the Balloon reaction time data (balloon and balloon_balance) normally distributed? Provide visual and numeric support for your answer.
+
+```{r question4}
+balloon_plot <- ggplot(df, aes(x=balloon)) + geom_histogram(fill="darkblue", binwidth = 9)
+balloon_plot
+
+```
+
+
+Explain your results in plain terms here: 
+
+---
+
+#### Question 5
+
+Shoe size could tell us something about general body size, which could also be connected to one's ability to hold your breath. In other words we predict that there is a positive relation between shoe size and how long time CogSci students can hold their breath. Try plotting the two sets of data against each other using a scatter plot (hint: both variables are continuous variables). Bonus question: Males and females have different body sizes. Use grouping in your plot to distinguish the relationship between shoe size and holding breath for males and females.
+
+```{r question5}
+
+```
+
+
+Explain your results in plain terms here: 
+
+
+
